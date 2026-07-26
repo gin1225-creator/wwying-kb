@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作知識庫 — 衛武營</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #F7F7F5;
+    --card-bg: #FFFFFF;
+    --text: #2C2C2C;
+    --text-sub: #6B6B6B;
+    --border: #E8E8E4;
+    --accent: #2D6A8F;
+    --accent-light: #E8F1F8;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --radius: 10px;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 20px 16px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .search-box {
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    background: rgba(255,255,255,0.95);
+    color: var(--text);
+    outline: none;
+  }
+
+  .search-box input::placeholder { color: #999; }
+
+  .search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+  }
+
+  .search-box .clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ddd;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 13px;
+    line-height: 22px;
+    text-align: center;
+    cursor: pointer;
+    color: #666;
+    display: none;
+  }
+
+  .categories {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: var(--bg);
+    position: sticky;
+    top: 88px;
+    z-index: 99;
+  }
+
+  .categories::-webkit-scrollbar { display: none; }
+
+  .cat-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: var(--card-bg);
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .cat-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .count-badge {
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--text-sub);
+    text-align: center;
+  }
+
+  .card-list { padding: 4px 16px 80px; }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .card:active { border-color: var(--accent); }
+
+  .card-cat {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+
+  .cat-廳院設備 { background: #DBEAFE; color: #1E40AF; }
+  .cat-倉庫與物品 { background: #FDE8CD; color: #92400E; }
+  .cat-值勤與工作流程 { background: #D1FAE5; color: #065F46; }
+  .cat-排練室 { background: #EDE9FE; color: #5B21B6; }
+  .cat-安全與門禁 { background: #FEE2E2; color: #991B1B; }
+  .cat-行政事務 { background: #E5E7EB; color: #374151; }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .card-summary {
+    font-size: 13px;
+    color: var(--text-sub);
+    line-height: 1.5;
+  }
+
+  .card-detail {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .card.expanded .card-detail { display: block; }
+
+  .card-detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+    margin-top: 10px;
+  }
+
+  .card-detail-label:first-child { margin-top: 0; }
+
+  .card-detail-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  .card-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-top: 8px;
+  }
+
+  .card-expand-hint {
+    font-size: 11px;
+    color: #aaa;
+    text-align: right;
+    margin-top: 6px;
+  }
+
+  .card.expanded .card-expand-hint { display: none; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-sub);
+  }
+
+  .empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  .highlight { background: #FEF08A; border-radius: 2px; padding: 0 1px; }
+
+  @media (min-width: 640px) {
+    .header { padding: 24px 24px 20px; }
+    .header h1 { font-size: 20px; }
+    .categories { padding: 14px 24px; }
+    .card-list { padding: 4px 24px 80px; max-width: 720px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📋 工作知識庫</h1>
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input type="text" id="searchInput" placeholder="搜尋關鍵字，例如：冷光線、B1060、門禁…" autocomplete="off">
+    <button class="clear-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+</div>
+
+<div class="categories" id="categories"></div>
+<div class="count-badge" id="countBadge"></div>
+<div class="card-list" id="cardList"></div>
+
+<script>
+const DATA = [{"t": "1026家用縫紉機借出歸還檢查項目", "s": "縫紉機借還前請確認線架、電源線、壓腳、底線蓋是否齊全，缺件或損壞請回報。", "r": "借出及歸還前確認線架/電源線/壓腳/底線蓋是否齊全或有損壞，有問題請回報。", "k": "1026, 縫紉機, 借用, 歸還, 檢查, 設備借用, 配件檢查", "c": "倉庫與物品", "l": "1026", "d": "2026-05-27"}, {"t": "1026抽屜維修完成並更改內容", "s": "1026抽屜滑軌已修復，第一層改為兩層，請依新標示放置物品。", "r": "1026抽屜滑軌已維修完成，第一層已分成兩層，標示已更新。", "k": "1026, 抽屜, 維修, 滑軌, 設備維護", "c": "倉庫與物品", "l": "1026", "d": "2026-06-25"}, {"t": "B1060倉庫空間配置更新", "s": "B1060倉庫多項設備位置調整：新增藍光照明、高腳椅、TT平台、不織布分區、圍欄推車等，請依標示擺放。", "r": "後方平台新增藍光照明（柱子旁插座接上）。工作區新增高腳椅×2、萬國排插×1。藍色盒子已分類標示，請按名稱擺放。巧拼120片統一置前區。不織布分兩區：前區可裁剪，後區演出留用。TT平台(180×90×20)圓弧台口用，3車放最後方靠牆。圍欄推車3台(2大1小)：大的各放B1060及B1034A，小的在1183。", "k": "B1060, 倉庫, 平台, 巧拼, 不織布, 圍欄推車, TT, B1034A, 1183, 照明, 高腳椅, 萬國排插, 空間配置", "c": "倉庫與物品", "l": "B1060, B1034A, 1183", "d": "2026-06-25"}, {"t": "B1060新採購戶外專用定位膠帶", "s": "新購戶外定位膠帶五色各3捲，暫放B1060工作台上，後續移至工作台下方。", "r": "B1060新採購戶外專用定位膠帶，五色各3捲。暫放B1060左手邊工作台上面，後續入庫放在工作台下方。", "k": "B1060, 定位膠帶, 倉庫, 採購, 膠帶, 戶外膠帶, 耗材", "c": "倉庫與物品", "l": "B1060", "d": "2026-07-12"}, {"t": "工具車內容調整", "s": "電動工具已改回舞台組管，耗材仍在工具車，神燈、譜架燈等移至最下層。", "r": "電動工具改回舞台組管轄（需借用請找舞台組）。耗材類（十字頭、鑽頭）仍在工具車。神燈、USB充電座、譜架燈+單變壓器調整至工具車最下層。", "k": "工具車, 電動工具, 神燈, 譜架燈, USB充電座, 舞台組, 變壓器, 側台設備", "c": "倉庫與物品", "l": "", "d": "2024-09-05"}, {"t": "西碼頭戶外專用板車使用規定", "s": "西碼頭3台戶外板車固定放繪景工廠左側，用完歸位，內外板車不可混用。", "r": "西碼頭放置3台戶外專用板車(2大1小)，黑色車體側邊有標示。固定放在繪景工廠出口左側，用完歸還原位。戶外板車不可移入廳院內(有輪胎痕)，內用板車不可移到戶外(易損輪子)。問題請洽舞台組。", "k": "西碼頭, 板車, 戶外專用, 繪景工廠, 搬運, 舞台組, 輪胎痕", "c": "倉庫與物品", "l": "西碼頭", "d": "2025-05-12"}, {"t": "靜電拖布髒布回收", "s": "廳院用過的靜電拖布髒布請放回B1060籃子，不要留在其他地方。", "r": "廳院用過的靜電拖布髒布，請放回B1060籃子裡。", "k": "靜電拖布, B1060, 清潔, 髒布, 廳院清潔, 回收", "c": "倉庫與物品", "l": "B1060", "d": "2026-05-06"}, {"t": "領用與借用區分", "s": "借用（會還）寫白板+廳院表單；領用（不還，TC交代）寫領用單。", "r": "臨時借用（會還）：寫倉庫白板跟廳院表單。領用（拿走不還，TC交代）：寫倉庫領用單。", "k": "領用, 借用, 倉庫, 表單, 白板, 領用單, TC, 物料管理", "c": "倉庫與物品", "l": "", "d": "2024-12-03"}, {"t": "OH助理值勤位置調整（OH/PH）", "s": "助理值勤請在舞台控台前設白中桌，紅色工具車每檔必設不收，必要時跟主控移動。", "r": "值勤時請在舞台控台前（設一白中桌）。助理白中桌+紅色工具車擺在控台桌前（每檔必設、桌子不收、必要時跟主控移動）。燈光/視聽白中桌擺控台後（視需求可設可不設）。", "k": "OH, PH, 助理, 值勤位置, 控台, 工具車, 白中桌, 舞台, 側台配置", "c": "值勤與工作流程", "l": "OH, PH", "d": "2024-08-20"}, {"t": "OP/CR演出執勤耳機佩戴規定", "s": "OP演出請戴對講機耳機；CR演出請同時戴intercom及對講機耳機，避免影響團隊且確保逃生通訊。", "r": "OP演出執勤時請佩戴對講機耳機。CR演出執勤時請同時配戴intercom及對講機耳機，因緊急逃生時仍會使用對講機。", "k": "OP, CR, 對講機, 耳機, intercom, 演出執勤, 側台, 逃生", "c": "值勤與工作流程", "l": "OH, PH, CR", "d": "2025-05-12"}, {"t": "PH開演前台口門扇關門檢查", "s": "開演前PH左右台口後台通前廳的門都要閤上，列入pre-set檢查。", "r": "開演前將PH左右台口後台通往前廳門扇都閤上，列入演前pre-set檢查項目。", "k": "PH, 台口, 門扇, pre-set, 演前檢查, 戲劇院, 前廳, 閤門", "c": "值勤與工作流程", "l": "PH", "d": "2026-06-25"}, {"t": "公共鋼琴線上巡檢表", "s": "每日巡檢公共鋼琴後請填寫線上巡檢表回報，無論有無異常皆需填寫。", "r": "公共鋼琴已有線上巡檢表，每日巡檢完請填寫回報狀況。", "k": "鋼琴, 巡檢, 線上表單, 每日巡檢, 公共鋼琴, 回報", "c": "值勤與工作流程", "l": "", "d": "2026-05-06"}, {"t": "助理日誌交接提醒", "s": "交接事項請寫進助理日誌，確保接班COVER的人知道所有待處理事項。", "r": "交接大小事請記得寫進助理日誌，不然臨時接班COVER的人會不知道有其他隱藏事項要處理。", "k": "助理日誌, 交接, 值勤, 工作交接, 接班, COVER", "c": "值勤與工作流程", "l": "", "d": "2026-07-12"}, {"t": "廳院早班開燈與離場節能規定", "s": "早班只開Ghost Light+COB，不開House Light和階梯燈；離場時工作燈關到只留COB。", "r": "早班開燈：4廳院只開Ghost Light + COB（CR加開一樓日光燈），House Light、階梯燈不開，等正職到班再視情況加開。離場時：工作燈關到只留COB燈。", "k": "開燈, Ghost Light, COB, House Light, 階梯燈, 節能, 早班, 離場, 廳院燈光", "c": "值勤與工作流程", "l": "OH, PH, CR, RH", "d": "2025-04-09"}, {"t": "橘帶發放注意事項", "s": "發放橘帶時記得問對方職位，方便拆台時追蹤。", "r": "團隊跟你拿橘帶時，記得詢問對方的職位，事後拆台會比較好追。", "k": "橘帶, 拆台, 團隊, 廳院工作, 標示帶, 識別", "c": "值勤與工作流程", "l": "", "d": "2026-07-12"}, {"t": "OH台口有東西擺放請走兩側包廂", "s": "OH台口有東西時請改走兩側包廂，觀眾席1樓鑰匙可開包廂門。", "r": "OH台口有擺放東西（燈光、音響、佈景）時，請改走兩側包廂出入口。觀眾席1樓鑰匙可開兩側包廂門。建議有團隊進場時都改走包廂。", "k": "OH, 台口, 包廂, 安全, 動線, 歌劇院, 鑰匙, 觀眾席", "c": "安全與門禁", "l": "OH", "d": "2024-12-18"}, {"t": "PH陷阱室門/後舞台門不關處理方式", "s": "PH陷阱室或後舞台門不關時，加告示立牌、填活動大表、列入日誌交接、助理巡檢。", "r": "PH遇陷阱室門或後舞台門不關時：1.加立立牌告示或磁吸告示在門上，避免被誤關。2.填活動大表告示。3.列入工作日誌交接事項。4.助理巡檢確認。", "k": "PH, 陷阱室, 後舞台, 門不關, 告示, 立牌, 巡檢, 戲劇院, 工作日誌", "c": "安全與門禁", "l": "PH", "d": "2025-05-12"}, {"t": "休假期間進館規定", "s": "休假進館只能在助辦技辦活動，不得進入廳院、倉庫等公務空間，有其他需求請先告知。", "r": "休假期間如需進館，請勿進入廳院、倉庫等公務空間及其他非開放空間。活動範圍以助辦技辦為主，如有其他需求請先向小美或紜斳告知。", "k": "休假, 進館, 管制, 規定, 非上班日, 助辦, 技辦, 公務空間", "c": "安全與門禁", "l": "", "d": "2026-07-12"}, {"t": "各廳院門扇下班預設狀態", "s": "各廳院門扇下班時應恢復預設狀態，詳細照片見原信件連結。", "r": "各廳院門扇下班預設狀態請參考原信件連結（含各廳院門狀態照片）。", "k": "門扇, 下班, 預設狀態, 廳院, 鎖門, 開門, 上鎖, 關門", "c": "安全與門禁", "l": "", "d": "2025-10-22"}, {"t": "孩童/動物進入後台區域申請與查驗流程", "s": "孩童或動物進後台需填同意書，TC核准後團隊拍照留存，紙本由TC留存，並轉知安全事務組與保全。", "r": "團隊有孩童或動物入館需求時：1.事前填寫同意書。2.TC核准簽名打勾，團隊拍照留存於照護者手機供查驗，紙本由TC留存併入該檔文件。3.TC或助理持同意書給安全事務組拍照（或傳照片），不在時找東警保全拍照。4.保全協助現場查驗。排練室助理代為核准時，需知會TC、傳照片給TC，紙本檔期結束後交付TC。", "k": "孩童, 動物, 同意書, 後台, TC, 保全, 安全事務組, 排練室助理, 核准, 查驗, 入館申請", "c": "安全與門禁", "l": "", "d": "2026-07-17"}, {"t": "門禁及管制區域提醒", "s": "開過門禁務必確認關好，後台發現民眾請回報TC。重點：前廳門、公共區域門、後台通前台門。", "r": "管制區域外開了門禁後務必確認關好。後台發現民眾請注意並回報TC。常見狀況：A.廳院前廳門隨手關門上鎖；B.公共區域門扇（榕樹廣場到3樓樹冠）；C.後台通前台門扇。", "k": "門禁, 管制區域, 安全, 前廳, 樹冠, 榕樹廣場, 後台, 上鎖", "c": "安全與門禁", "l": "前廳, 後台, 榕樹廣場, 3樓樹冠", "d": "2024-10-08"}, {"t": "OH/PH/PS冷光線配置與工作方式", "s": "各廳院新配冷光線取代營繩燈，搭配粉紅色18650電池，中間連接線保持插著不拆。", "r": "OP廳院新配冷光線組取代營繩燈。OP各配10M×2+20M×1，PS新增10m+20m+電池×4。專屬18650電池（粉紅色）。工作方式：中間連接線插著不拆，接觸不良先檢查卡扣是否扣到底。原營繩燈暫保留，預計季保養時下架。", "k": "冷光線, 營繩燈, OP, OH, PH, PS, 電池, 18650, 照明, 側台設備", "c": "廳院設備", "l": "OH, PH, PS", "d": "2026-05-27"}, {"t": "OH假鏡框旁布幕不要束起來", "s": "OH假鏡框旁布幕材質特殊，束起會留勒痕，請勿綁束；其他側遮幕可束。", "r": "OH假鏡框旁的布幕因材質緣故，綁束後會有勒痕，請不要束起來。其他側遮幕可束。", "k": "OH, 假鏡框, 布幕, 側遮幕, 勒痕, 歌劇院", "c": "廳院設備", "l": "OH", "d": "2026-06-25"}, {"t": "OP側台常設桌椅配置", "s": "歌劇院與戲劇院側台各有常設桌椅（貼有標示），不列入團隊基配、也不是各組墨綠色桌椅。", "r": "歌劇院常設中桌3張+折椅6張，戲劇院常設中桌1張+折椅2張。桌右上/椅背右邊貼有廳院常設標示。不列入團隊基配數量，也不是各組墨綠色桌椅。", "k": "OP, 側台, 常設桌椅, 歌劇院, 戲劇院, 中桌, 折椅, 基配, 側台設備", "c": "廳院設備", "l": "OH, PH", "d": "2024-11-16"}, {"t": "PH前台小房間篱尺", "s": "PH前台小房間有一把篱尺，可用來比對控桌腳尺寸。", "r": "PH前台小房間放控台腳處有一把篱尺，可用來比對控桌腳。", "k": "PH, 篱尺, 控台腳, 前台, 戲劇院, 工具", "c": "廳院設備", "l": "PH", "d": "2026-05-06"}, {"t": "廳院及排練室移動式冷氣/風扇借用規定", "s": "夏天空調不足時可借用移動式冷氣、渦輪風扇、立扇，依空間位置分別從B1060或1183取用。", "r": "夏天空調不足時可借用移動式冷氣、渦輪風扇、立扇。靠窗空間（PH 1034/1036/1038/1040/1029/1033）取用B1060的設備；靠窗空間（1192/1186）取用1183的移動式冷氣。", "k": "移動式冷氣, 渦輪風扇, 立扇, 電扇, 風扇, 冷氣, B1060, 1183, 排練室, 夏天, 空調, 借用", "c": "廳院設備", "l": "B1060, 1183", "d": "2025-05-12"}, {"t": "新增電風扇20台各區域基配分配", "s": "新增20台電風扇分配到PH、CH、排練室各空間，風扇上有標籤，團隊離場前確認歸位。", "r": "新增20台電風扇分配到各區域基配，風扇上貼有所屬空間標籤，團隊離場前記得確認風扇歸位。分配：PH 1034×1, 1036×1, 1038×1, 1040×1；CH B1141×2, B1146×2, 1254×2；排練室 1186×2, 1182×1, 1184×1, 1192×2, B312×4。", "k": "電風扇, 風扇, 電扇, 基配, PH, CH, 排練室, 1034, 1036, 1038, 1040, B1141, B1146, 1254, 1186, 1182, 1184, 1192, B312, 歸位", "c": "廳院設備", "l": "PH, CH, 排練室", "d": "2026-07-23"}, {"t": "管風琴長線檢測注意事項", "s": "管風琴cable長線已修復，可正常使用，不再需要額外網路線。", "r": "管風琴CABLE長線已維修完成，可正常使用，不用單獨拿網路線，用原先長線即可。", "k": "管風琴, cable, 網路線, 訊號線, 樂器, 視聽組, 長線, 維修完成", "c": "廳院設備", "l": "", "d": "2025-05-12"}, {"t": "公共鋼琴線上巡檢表", "s": "每日巡檢公共鋼琴後請填寫線上巡檢表回報，無論有無異常皆需填寫。", "r": "公共鋼琴已有線上巡檢表，每日巡檢完請填寫回報狀況。", "k": "鋼琴, 巡檢, 線上表單, 每日巡檢, 公共鋼琴, 回報", "c": "排練室", "l": "", "d": "2026-05-06"}, {"t": "大排練室窗簾使用注意事項", "s": "排練室窗簾請從第二片開始拉，不要拉第一片，否則容易脫軌。", "r": "使用時引導團隊從第二片簾布後方再開始拉，避免直接拉第一片（容易造成上方零件脫軌）。現場已貼提醒標語。有鬆脫或異常請跟蕭筠回報。", "k": "窗簾, 1171, 1186, 1192, 大排練室, 脫軌, 簾布, 團隊引導", "c": "排練室", "l": "1171, 1186, 1192", "d": "2026-05-27"}, {"t": "排練室教育訓練檔案及服務台報到流程", "s": "排練室教育訓練及服務台報到流程均有電子檔可參考，現場也有實體文件。", "r": "排練室教育訓練檔案及服務台報到流程文件均有電子檔（見原信件連結）。服務台現場也有實體文件可翻閱。", "k": "排練室, 教育訓練, 服務台, 報到流程, SOP, 工作流程, 新人訓練", "c": "排練室", "l": "", "d": "2025-10-22"}, {"t": "排練室椅子配置異動", "s": "1183/1186/1192椅子配置已調整，新增祥業椅與高腳椅，減少借還搬運。", "r": "1183新增祥業椅 1車/30張+可轉高腳椅 3張。1186：折椅 2車/60張。1192：祥業椅 2車/60張。", "k": "1183, 1186, 1192, 排練室, 椅子, 祥業椅, 折椅, 高腳椅, 座位, 樂團", "c": "排練室", "l": "", "d": "2025-09-20"}, {"t": "推排練室鋼琴注意事項", "s": "推琴距離兩側較近時建議三人行動，1192有落差請特別小心。", "r": "推琴時如果距離兩側比較近，建議三人行動。1192內室有落差比較難推，後續會將地板墊高及修改欄框。", "k": "鋼琴, 排練室, 1192, 搬運, 推琴, 安全, 三人行動", "c": "排練室", "l": "1192", "d": "2026-06-25"}, {"t": "2026年8月季保養回訓時間", "s": "2026年季保養回訓定於8/13、8/14，請提前預留時間。", "r": "2026年8月季保養回訓時間為8月13日（四）及8月14日（五），請相關人員預留時段。", "k": "季保養, 回訓, 教育訓練, 8月, 保養訓練", "c": "行政事務", "l": "", "d": "2026-08-13"}, {"t": "TC聯絡資訊更新", "s": "聯TC請用最新版通訊錄，避免用到舊聯絡方式。", "r": "需聯繫TC時，請使用最新版通訊錄中的聯絡資訊。", "k": "TC, 技術協調, 通訊錄, 聯絡資訊, 聯絡人, 電話, 名單更新", "c": "行政事務", "l": "", "d": ""}, {"t": "助理TC職務調整", "s": "部分檔期由助理TC執勤，可透過助理TC協助雙向溝通。", "r": "部分檔期將由助理TC執勤；相關工作協調與意見傳達，可透過助理TC協助雙向溝通。", "k": "助理TC, TC, 技術協調, 職務調整, 排班, 幹部, 雙向溝通", "c": "行政事務", "l": "", "d": "2026-04-01"}, {"t": "勞保改月保注意事項", "s": "勞保已改月保，最低277元，當月無排班可能被扣款，請留意。", "r": "勞保已改月保，最低門檻277元（約2小時工資）。該月無排班可能被扣款。", "k": "勞保, 月保, 扣款, 薪資, 保險, 排班, 計時人員", "c": "行政事務", "l": "", "d": "2025-12-01"}, {"t": "後台助理與技術協調組通訊錄更新", "s": "聯繫後台助理或TC請使用20260425版通訊錄，舊版請勿使用。", "r": "聯繫後台助理、實習助理或技術協調組時，請使用「2026後台助理及技術協調組聯絡資訊20260425」最新版文件。", "k": "後台助理, 實習助理, 技術協調組, TC, 通訊錄, 聯絡資訊, 聯絡人, 20260425", "c": "行政事務", "l": "", "d": "2026-04-25"}, {"t": "查勞健保證明教學", "s": "勞健保證明申請步驟教學：勞保用e化服務儲存PDF，健保用快易通APP截圖。統編41344492。", "r": "勞保證明：登入勞保局e化服務→勞工保險最新異動紀錄拉到最後一頁→右上角列印→勾選顯示身分證號→儲存PDF。需顯示投保證號、投保單位名稱、生效日期。確認退保日期為空白。健保證明：下載全民健保行動快易通APP→健保櫃檯→在保資料總覽→截圖。公司全銜：國家表演藝術中心衛武營國家藝術文化中心，統編：41344492。", "k": "勞保, 健保, 證明, 外聘, 行政, 勞保局, e化服務, 健康存摺, 投保證號, 統編", "c": "行政事務", "l": "", "d": "2026-07-12"}, {"t": "考勤機換機NEC—靠卡感應", "s": "考勤機已換為NEC，用靠卡感應簽到簽退，取代舊Siemens機器。", "r": "2024/11/12起啟用NEC多功能考勤機，靠卡感應簽到/簽退。替代原有Siemens考勤機。", "k": "考勤機, NEC, 簽到, 簽退, 打卡, 靠卡, 感應, 出勤", "c": "行政事務", "l": "東西警", "d": "2024-11-12"}];
+
+const CATS = ['全部','廳院設備','倉庫與物品','值勤與工作流程','排練室','安全與門禁','行政事務'];
+let activeCat = '全部';
+let query = '';
+
+function init() {
+  const catDiv = document.getElementById('categories');
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (c === '全部' ? ' active' : '');
+    btn.textContent = c;
+    btn.onclick = () => { activeCat = c; updateCats(); render(); };
+    catDiv.appendChild(btn);
+  });
+
+  const input = document.getElementById('searchInput');
+  input.addEventListener('input', e => {
+    query = e.target.value.trim();
+    document.getElementById('clearBtn').style.display = query ? 'block' : 'none';
+    render();
+  });
+
+  render();
+}
+
+function updateCats() {
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent === activeCat);
+  });
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  query = '';
+  document.getElementById('clearBtn').style.display = 'none';
+  render();
+}
+
+function matchItem(item, q) {
+  if (!q) return true;
+  const lower = q.toLowerCase();
+  const fields = [item.t, item.s, item.r, item.k, item.l || ''].join(' ').toLowerCase();
+  return lower.split(/\s+/).every(term => fields.includes(term));
+}
+
+function highlightText(text, q) {
+  if (!q) return text;
+  const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!terms.length) return text;
+  const escaped = terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const re = new RegExp('(' + escaped.join('|') + ')', 'gi');
+  return text.replace(re, '<span class="highlight">$1</span>');
+}
+
+function render() {
+  const list = document.getElementById('cardList');
+  const badge = document.getElementById('countBadge');
+  
+  let filtered = DATA.filter(item => {
+    if (activeCat !== '全部' && item.c !== activeCat) return false;
+    return matchItem(item, query);
+  });
+
+  badge.textContent = `共 ${filtered.length} 筆${query ? '（搜尋：' + query + '）' : ''}`;
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty-state"><div class="emoji">🔍</div><p>找不到符合的結果<br>試試其他關鍵字或切換分類</p></div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map((item, i) => {
+    const catClass = 'cat-' + item.c;
+    const loc = item.l ? `<div class="card-location">📍 ${highlightText(item.l, query)}</div>` : '';
+    const date = item.d ? `<div class="card-detail-label">生效日期</div><div class="card-detail-text">${item.d}</div>` : '';
+
+    return `<div class="card" onclick="this.classList.toggle('expanded')">
+      <span class="card-cat ${catClass}">${item.c}</span>
+      <div class="card-title">${highlightText(item.t, query)}</div>
+      <div class="card-summary">${highlightText(item.s, query)}</div>
+      ${loc}
+      <div class="card-expand-hint">點擊展開詳細規則 ▾</div>
+      <div class="card-detail">
+        <div class="card-detail-label">目前規則</div>
+        <div class="card-detail-text">${highlightText(item.r, query)}</div>
+        ${date}
+        <div class="card-detail-label">關鍵字</div>
+        <div class="card-detail-text">${highlightText(item.k, query)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+init();
+</script>
+</body>
+</html>
